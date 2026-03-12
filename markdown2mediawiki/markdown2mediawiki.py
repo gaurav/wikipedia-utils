@@ -71,7 +71,7 @@ def classify_line(raw: str):
 
     m = ORDERED_RE.match(stripped)
     if m:
-        return ('ordered', level, m.group(1))
+        return ('ordered', level, stripped)
 
     # Indented non-bullet text
     if level > 0:
@@ -101,7 +101,7 @@ def convert_line(line_type: str, level: int, content: str) -> str:
         return f'{marks} {content}'
 
     if line_type == 'ordered':
-        marks = '#' * (level + 1)
+        marks = '*' * (level + 1)
         return f'{marks} {content}'
 
     if line_type == 'indented_text':

@@ -39,7 +39,7 @@ uv run markdown2mediawiki.py data/ncp.md -o data/ncp.mediawiki 2>&1 | tee data/l
 | `[text](url)` | `[url text]` |
 | `**bold**` | `'''bold'''` |
 | `*italic*` | `''italic''` |
-| `1. item` | `# item` |
+| `1. item` / `    1. item` | `* 1. item` / `** 1. item` (bullet with number as text) |
 | Etherpad preamble lines | *(stripped in `etherpad` dialect)* |
 
 Checkboxes (`- [ ]` and `- [x]`) are converted to plain bullets (MediaWiki
