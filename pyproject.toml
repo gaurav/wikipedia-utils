@@ -1,5 +1,5 @@
 [project]
-name = "markdown2mediawiki"
+name = "wikipedia-utils"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["click>=8.0", "tqdm>=4.0"]

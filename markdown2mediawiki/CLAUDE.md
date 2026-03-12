@@ -45,6 +45,12 @@ uv run markdown2mediawiki.py data/ncp.md -o data/ncp.mediawiki 2>&1 | tee data/l
 Checkboxes (`- [ ]` and `- [x]`) are converted to plain bullets (MediaWiki
 has no native checkbox syntax).
 
+## Project setup
+
+Dependencies (`click`, `tqdm`) are declared in the repo-root `pyproject.toml`
+(`wikipedia-utils`). There is no per-script `pyproject.toml`; `uv` finds the
+root file automatically when you run from inside the subdirectory.
+
 ## Architecture
 
 The script is deliberately line-by-line and function-per-rule so contributors
