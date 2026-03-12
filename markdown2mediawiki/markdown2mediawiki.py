@@ -113,6 +113,39 @@ def convert_line(line_type: str, level: int, content: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Post-processing
+# ---------------------------------------------------------------------------
+
+_LIST_LINE_RE = re.compile(r'^[*#]')
+
+
+def collapse_list_blanks(lines: list[str]) -> list[str]:
+    """Remove blank lines that fall between two MediaWiki list items.
+
+    MediaWiki resets a list whenever a blank line appears, so consecutive
+    list items must not be separated by blank lines.
+    """
+    result = []
+    i = 0
+    while i < len(lines):
+        if lines[i] == '':
+            # Find the next non-blank line
+            j = i + 1
+            while j < len(lines) and lines[j] == '':
+                j += 1
+            prev = next((l for l in reversed(result) if l != ''), None)
+            nxt = lines[j] if j < len(lines) else None
+            if (prev and _LIST_LINE_RE.match(prev) and
+                    nxt and _LIST_LINE_RE.match(nxt)):
+                # Skip blank(s) between two list lines
+                i = j
+                continue
+        result.append(lines[i])
+        i += 1
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Preamble stripping
 # ---------------------------------------------------------------------------
 
@@ -152,7 +185,7 @@ def convert_lines(lines: list[str], dialect: str, strip_preamble: bool) -> list[
         logger.debug('%s (lvl=%d) -> %r', line_type, level, result)
         output.append(result)
 
-    return output
+    return collapse_list_blanks(output)
 
 
 # ---------------------------------------------------------------------------
