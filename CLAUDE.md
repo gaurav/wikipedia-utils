@@ -1,5 +1,5 @@
 When creating a Python script, create or update the corresponding CLAUDE.md file explaining the script.
-All Python scripts should be runnable with `uv run`.
+All Python scripts should be runnable with either `uv run toolname/toolname.py` or `uv run toolname.py` in the correct directory.
 Use click to provide a simple CLI.
 Use logging to provide progress information.
 Use tqdm to provide progress bars and completion estimates on long-running loops.
