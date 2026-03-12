@@ -159,11 +159,22 @@ def should_strip_preamble(dialect: str, strip_preamble_override) -> bool:
     return strip_preamble_override
 
 
+def should_indent_as_bullets(dialect: str, indent_as_bullets_override) -> bool:
+    """Decide whether indented non-bullet text becomes list bullets."""
+    if dialect == 'markdown':
+        return False if indent_as_bullets_override is None else indent_as_bullets_override
+    # etherpad dialect: default True, overridable
+    if indent_as_bullets_override is None:
+        return True
+    return indent_as_bullets_override
+
+
 # ---------------------------------------------------------------------------
 # Main conversion
 # ---------------------------------------------------------------------------
 
-def convert_lines(lines: list[str], dialect: str, strip_preamble: bool) -> list[str]:
+def convert_lines(lines: list[str], dialect: str, strip_preamble: bool,
+                  indent_as_bullets: bool) -> list[str]:
     """Convert a list of raw input lines to MediaWiki wikitext lines."""
     output = []
     preamble_active = strip_preamble  # True until we see the first header
@@ -181,6 +192,8 @@ def convert_lines(lines: list[str], dialect: str, strip_preamble: bool) -> list[
                 continue
 
         line_type, level, content = classify_line(raw)
+        if indent_as_bullets and line_type == 'indented_text':
+            line_type = 'bullet'
         result = convert_line(line_type, level, content)
         logger.debug('%s (lvl=%d) -> %r', line_type, level, result)
         output.append(result)
@@ -200,8 +213,11 @@ def convert_lines(lines: list[str], dialect: str, strip_preamble: bool) -> list[
               show_default=True, help='Input dialect.')
 @click.option('--strip-preamble/--no-strip-preamble', default=None,
               help='Override preamble stripping within etherpad dialect.')
+@click.option('--indented-as-bullets/--no-indented-as-bullets', default=None,
+              help='Convert indented non-bullet text to list items. '
+                   'Default: on for etherpad, off for markdown.')
 @click.option('-v', '--verbose', is_flag=True, help='Enable DEBUG logging.')
-def main(input_file, output_file, dialect, strip_preamble, verbose):
+def main(input_file, output_file, dialect, strip_preamble, indented_as_bullets, verbose):
     """Convert a Markdown file to MediaWiki wikitext.
 
     Reads from INPUT_FILE or stdin. Writes to stdout or --output file.
@@ -212,7 +228,9 @@ def main(input_file, output_file, dialect, strip_preamble, verbose):
     )
 
     do_strip = should_strip_preamble(dialect, strip_preamble)
-    logger.info('Dialect: %s | strip_preamble: %s', dialect, do_strip)
+    do_indent_as_bullets = should_indent_as_bullets(dialect, indented_as_bullets)
+    logger.info('Dialect: %s | strip_preamble: %s | indent_as_bullets: %s',
+                dialect, do_strip, do_indent_as_bullets)
 
     if input_file:
         logger.info('Reading from %s', input_file)
@@ -222,7 +240,8 @@ def main(input_file, output_file, dialect, strip_preamble, verbose):
         logger.info('Reading from stdin')
         lines = sys.stdin.readlines()
 
-    result_lines = convert_lines(lines, dialect=dialect, strip_preamble=do_strip)
+    result_lines = convert_lines(lines, dialect=dialect, strip_preamble=do_strip,
+                                 indent_as_bullets=do_indent_as_bullets)
 
     output_text = '\n'.join(result_lines) + '\n'
 

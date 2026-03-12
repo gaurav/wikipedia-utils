@@ -18,6 +18,7 @@ Options:
 | `-o FILE` / `--output FILE` | stdout | Write output to a file |
 | `--dialect [etherpad\|markdown]` | `etherpad` | Input dialect |
 | `--strip-preamble` / `--no-strip-preamble` | per-dialect | Override preamble stripping |
+| `--indented-as-bullets` / `--no-indented-as-bullets` | per-dialect (on for etherpad) | Convert indented non-bullet text to list items |
 | `-v` / `--verbose` | off | Enable DEBUG logging |
 
 ### Run with sample data and log output
@@ -35,7 +36,7 @@ uv run markdown2mediawiki.py data/ncp.md -o data/ncp.mediawiki 2>&1 | tee data/l
 | `## H2` | `== H2 ==` |
 | `- item` | `* item` |
 | `    - item` (4 sp indent) | `** item` |
-| `    text` (indented non-bullet) | `:text` |
+| `    text` (indented non-bullet) | `:text` (or `** text` bullet with `--indented-as-bullets`) |
 | `[text](url)` | `[url text]` |
 | `**bold**` | `'''bold'''` |
 | `*italic*` | `''italic''` |
@@ -62,7 +63,7 @@ can find and change any single rule in isolation:
 - **`convert_line(line_type, level, content)`** — maps a classified line to
   MediaWiki markup.
 - **`convert_inline(text)`** — applies link, bold, and italic substitutions.
-- **`convert_lines(lines, dialect, strip_preamble)`** — orchestrates the loop
+- **`convert_lines(lines, dialect, strip_preamble, indent_as_bullets)`** — orchestrates the loop
   with tqdm progress bar and preamble gating.
 
 ## Adding a new dialect or rule
