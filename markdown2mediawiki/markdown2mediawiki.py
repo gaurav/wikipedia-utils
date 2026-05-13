@@ -37,7 +37,6 @@ CHECKBOX_UNCHECKED_RE = re.compile(r'^- \[ \] ')
 CHECKBOX_CHECKED_RE = re.compile(r'^- \[x\] ', re.IGNORECASE)
 BULLET_RE = re.compile(r'^- ')
 ORDERED_RE = re.compile(r'^\d+\. (.*)')
-ETHERPAD_PREAMBLE_RE = re.compile(r'^Welcome to the WMF Etherpad installation\.')
 
 
 def classify_line(raw: str):
@@ -71,6 +70,8 @@ def classify_line(raw: str):
 
     m = ORDERED_RE.match(stripped)
     if m:
+        # Pass stripped (e.g. "1. item") as content; convert_line prefixes "*"
+        # so the number is preserved as visible text rather than a list counter.
         return ('ordered', level, stripped)
 
     # Indented non-bullet text
@@ -161,12 +162,10 @@ def should_strip_preamble(dialect: str, strip_preamble_override) -> bool:
 
 def should_indent_as_bullets(dialect: str, indent_as_bullets_override) -> bool:
     """Decide whether indented non-bullet text becomes list bullets."""
-    if dialect == 'markdown':
-        return False if indent_as_bullets_override is None else indent_as_bullets_override
-    # etherpad dialect: default True, overridable
-    if indent_as_bullets_override is None:
-        return True
-    return indent_as_bullets_override
+    if indent_as_bullets_override is not None:
+        return indent_as_bullets_override
+    # etherpad default: on; markdown default: off
+    return dialect == 'etherpad'
 
 
 # ---------------------------------------------------------------------------
@@ -182,16 +181,14 @@ def convert_lines(lines: list[str], dialect: str, strip_preamble: bool,
     for raw in tqdm(lines, desc='Converting', unit='line', disable=not sys.stderr.isatty()):
         raw = raw.rstrip('\n')
 
+        line_type, level, content = classify_line(raw)
+
         if preamble_active:
-            line_type, level, content = classify_line(raw)
             if line_type == 'header':
                 preamble_active = False
-                # Fall through to normal conversion below
             else:
                 logger.debug('Stripping preamble line: %r', raw)
                 continue
-
-        line_type, level, content = classify_line(raw)
         if indent_as_bullets and line_type == 'indented_text':
             line_type = 'bullet'
         result = convert_line(line_type, level, content)
