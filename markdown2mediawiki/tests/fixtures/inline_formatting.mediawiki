@@ -1,0 +1,7 @@
+= Formatting =
+
+* '''bold text''' in a bullet
+* ''italic text'' in a bullet
+* '''bold''' and ''italic'' together
+* A [https://example.com link text] inline
+* '''[https://example.com bold link]'''

@@ -1,0 +1,7 @@
+= Action items =
+
+* Unchecked task
+* Completed task
+* Also completed (uppercase X)
+** Nested unchecked
+** Nested checked
