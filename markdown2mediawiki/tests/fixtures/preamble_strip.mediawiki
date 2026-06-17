@@ -1,0 +1,3 @@
+= First Real Heading =
+
+Content after the heading is kept.
